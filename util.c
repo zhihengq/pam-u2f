@@ -1189,6 +1189,7 @@ int do_authentication(const cfg_t *cfg, const device_t *devices,
   char *authtok;
   size_t authtok_len;
   int enable_authtok;
+  int no_device_found = 1;
 
   init_opts(&opts);
 #ifndef WITH_FUZZING
@@ -1245,6 +1246,8 @@ int do_authentication(const cfg_t *cfg, const device_t *devices,
 
     if (get_authenticators(cfg, devlist, ndevs, assert,
                            is_resident(devices[i].keyHandle), authlist)) {
+      no_device_found = 0;
+
       for (size_t j = 0; authlist[j] != NULL; j++) {
         /* options used during authentication */
         parse_opts(cfg, devices[i].attributes, &opts);
@@ -1364,6 +1367,11 @@ int do_authentication(const cfg_t *cfg, const device_t *devices,
     }
 
     fido_assert_free(&assert);
+  }
+
+  if (no_device_found) {
+    debug_dbg(cfg, "No device for any keyhandle is present");
+    retval = 0;
   }
 
 out:

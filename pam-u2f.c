@@ -375,10 +375,11 @@ int pam_sm_authenticate(pam_handle_t *pamh, int flags, int argc,
   }
 
   if (cfg->manual == 0) {
-    if (cfg->interactive) {
-      interactive_prompt(pamh, cfg);
-    }
     retval = do_authentication(cfg, devices, n_devices, pamh);
+    if (retval == 0 && cfg->interactive) {
+      interactive_prompt(pamh, cfg);
+      retval = do_authentication(cfg, devices, n_devices, pamh);
+    }
   } else {
     retval = do_manual_authentication(cfg, devices, n_devices, pamh);
   }
